@@ -1,3 +1,5 @@
 <resources>
-    <string name="app_name">CS496_PJ2_1</string>
+    <string name="app_name">CS496 PJ2</string>
+    <string name="facebook_app_id">507079386301719</string>
+    <string name="fb_login_protocol_scheme">fb507079386301719</string>
 </resources>
