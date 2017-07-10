@@ -21,10 +21,12 @@ class GetTask extends AsyncTask<String, String , String> {
 
     @Override
     protected String doInBackground(String... url){
+        //make request with given url
         final Request request = new Request.Builder()
                 .url(url[0])
                 .build();
         try {
+            //get response of the request
             Response response = client.newCall(request).execute();
             return response.body().string();
         }catch (IOException e) {

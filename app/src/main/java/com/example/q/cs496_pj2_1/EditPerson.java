@@ -37,4 +37,39 @@ public class EditPerson extends AppCompatActivity {
             }
         });
     }
+
+    //show with link
+    /*Thread thread = new Thread(new Runnable() {
+
+        @Override
+        public void run() {
+            try{
+                URL url = new URL(link);
+                InputStream is =url.openStream();
+                bitmap = BitmapFactory.decodeStream(is);
+
+                //핸들러 사용
+                handler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        imgView.setImageBitmap(bitmap);
+                    }
+                });
+                imgView.setImageBitmap(bitmap);
+            }catch (Exception e){
+                e.printStackTrace();
+            }
+        }
+    });
+
+    thread.start();
+
+    URLConnection conn = url.openConnection();
+                            conn.connect();
+                            BufferedInputStream bis = new BufferedInputStream(conn.getInputStream());
+                            Bitmap bm = BitmapFactory.decodeStream(bis);
+                            bis.close();
+                            myImage.setImageBitmap(bm);
+    */
 }
+
