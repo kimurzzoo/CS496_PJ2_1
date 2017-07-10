@@ -6,6 +6,7 @@ import android.content.pm.PackageManager;
 import android.content.res.AssetFileDescriptor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
@@ -13,6 +14,7 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.content.FileProvider;
+import android.util.Base64;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -26,7 +28,13 @@ import com.facebook.AccessToken;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.ByteArrayOutputStream;
 import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.concurrent.ExecutionException;
 
 import static android.app.Activity.RESULT_OK;
@@ -37,13 +45,14 @@ import static android.app.Activity.RESULT_OK;
 
 public class BTap extends Fragment {
     public AccessToken user = AccessToken.getCurrentAccessToken();
-    public String url = "http://10.0.2.2:8080/api/people";
+    public String url = "http://13.124.144.112:8080/api/people";
     public String userID;
     public Integer REQUEST_GET_PHOTO = 1;
-    TextView name;
-    EditText email;
-    TextView gender;
-    ImageView image;
+    TextView nameView;
+    EditText emailView;
+    TextView genderView;
+    ImageView imageView;
+
     int[] images = {R.drawable.img_1, R.drawable.img_2, R.drawable.img_3, R.drawable.img_4, R.drawable.img_5,
             R.drawable.img_6, R.drawable.img_7, R.drawable.img_8, R.drawable.img_9, R.drawable.img_10};
 
@@ -58,10 +67,14 @@ public class BTap extends Fragment {
         if (user != null) {
             userID = AccessToken.getCurrentAccessToken().getUserId();
 
-            name = (TextView) view.findViewById(R.id.userName);
-            email = (EditText) view.findViewById(R.id.userEmail);
-            gender = (TextView) view.findViewById(R.id.userGender);
-            image = (ImageView) view.findViewById(R.id.image);
+            nameView = (TextView) view.findViewById(R.id.userName);
+            emailView = (EditText) view.findViewById(R.id.userEmail);
+            genderView = (TextView) view.findViewById(R.id.userGender);
+            imageView = (ImageView) view.findViewById(R.id.image);
+
+            imageView.setClickable(false);
+            imageView.setFocusable(false);
+            emailView.setFocusableInTouchMode(false);
 
             //get user information
             final GetTask getTask = new GetTask();
@@ -81,33 +94,76 @@ public class BTap extends Fragment {
 
             //set user information
             try {
-                name.setText(userJson.getString("name"));
-                email.setText(userJson.getString("email"));
-                gender.setText(userJson.getString("gender"));
-                String imageSource = userJson.getString("image");
+                nameView.setText(userJson.getString("name"));
+                emailView.setText(userJson.getString("email"));
+                genderView.setText(userJson.getString("gender"));
 
-                //change!! get info from server.
-                image.setImageResource(R.drawable.ic_person);
+                String imageSource = userJson.getString("image");
+                Bitmap imageBitmap;
+                if(imageSource.contains("https://")) {
+                    URL imageUrl = new URL(imageSource);
+                    HttpURLConnection connection = (HttpURLConnection) imageUrl.openConnection();
+                    connection.setDoInput(true);
+                    connection.connect();
+                    InputStream is = connection.getInputStream();
+                    imageBitmap = BitmapFactory.decodeStream(is);
+                } else {
+                    byte[] buf = Base64.decode(imageSource, Base64.DEFAULT);
+                    imageBitmap = BitmapFactory.decodeByteArray(buf, 0, buf.length);
+                }
+                imageView.setImageBitmap(imageBitmap);
             } catch (JSONException e) {
+                e.printStackTrace();
+            } catch (MalformedURLException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
                 e.printStackTrace();
             }
 
-            image.setOnClickListener(new View.OnClickListener() {
+            imageView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    Intent photoIntent = new Intent(
-                            getActivity().getApplicationContext(),
-                            ChoosePhoto.class
-                    );
-                    startActivityForResult(photoIntent, REQUEST_GET_PHOTO);
+                    if (imageView.isClickable() && imageView.isFocusable()) {
+                        Intent photoIntent = new Intent(
+                                getActivity().getApplicationContext(),
+                                ChoosePhoto.class
+                        );
+                        startActivityForResult(photoIntent, REQUEST_GET_PHOTO);
+                    }
                 }
             });
 
-            Button save = (Button) view.findViewById(R.id.save);
-            save.setOnClickListener(new View.OnClickListener() {
+            final Button button = (Button) view.findViewById(R.id.changeANDsave);
+            button.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    //save the information to server db. (email, image)
+                    if (button.getText().equals("수정")){
+                        imageView.setClickable(true);
+                        imageView.setFocusable(true);
+                        emailView.setFocusableInTouchMode(true);
+                        emailView.setClickable(true);
+                        emailView.setFocusable(true);
+                        button.setText("저장");
+                    }else if (button.getText().equals("저장")) {
+                        Bitmap imageBitmap = ((BitmapDrawable) (imageView.getDrawable())).getBitmap();
+                        ByteArrayOutputStream stream = new ByteArrayOutputStream();
+                        imageBitmap.compress(Bitmap.CompressFormat.JPEG, 100, stream);
+                        byte[] buf = stream.toByteArray();
+                        String encodedImage = Base64.encodeToString(buf, Base64.DEFAULT);
+
+                        String jsonStr = "{'email':'" + emailView.getText().toString() + "', " +
+                                "'image':'" + encodedImage + "'}";
+
+                        PutTask putTask = new PutTask("http://13.124.144.112:8080/api/people/"+userID, jsonStr);
+                        putTask.execute();
+
+                        emailView.setClickable(false);
+                        emailView.setFocusable(false);
+                        emailView.setFocusableInTouchMode(false);
+                        imageView.setClickable(false);
+                        imageView.setFocusable(false);
+                        button.setText("수정");
+                    }
                 }
             });
         }
@@ -122,7 +178,7 @@ public class BTap extends Fragment {
             image.setImageBitmap(imageBitmap);*/
             int position = data.getIntExtra("position", 0);
             if (position < images.length) {
-                image.setImageResource(images[position]);
+                imageView.setImageResource(images[position]);
             }else {
                 Uri uri = data.getParcelableExtra("uri");
                 AssetFileDescriptor afd = null;
@@ -134,7 +190,7 @@ public class BTap extends Fragment {
                 BitmapFactory.Options opt = new BitmapFactory.Options();
                 opt.inSampleSize = 4;
                 Bitmap bitmap = BitmapFactory.decodeFileDescriptor(afd.getFileDescriptor(), null, opt);
-                image.setImageBitmap(bitmap);
+                imageView.setImageBitmap(bitmap);
             }
         }
     }
