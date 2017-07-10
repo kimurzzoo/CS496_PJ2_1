@@ -1,6 +1,7 @@
 package com.example.q.cs496_pj2_1;
 
 import android.content.Intent;
+import android.support.v4.app.FragmentTabHost;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -32,6 +33,7 @@ import java.util.concurrent.ExecutionException;
 
 public class MainActivity extends AppCompatActivity {
     CallbackManager callbackManager;
+    private FragmentTabHost mTabHost;
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -41,6 +43,11 @@ public class MainActivity extends AppCompatActivity {
             startActivity(loginIntent);
         }
         setContentView(R.layout.activity_main);
-    }
 
+        mTabHost = (FragmentTabHost) findViewById(android.R.id.tabhost);
+        mTabHost.setup(this, getSupportFragmentManager(), android.R.id.tabcontent);
+        mTabHost.addTab(mTabHost.newTabSpec("Tab1").setIndicator("Friends", null), ATap.class, null);
+        mTabHost.addTab(mTabHost.newTabSpec("Tab2").setIndicator("My Page", null), BTap.class, null);
+        mTabHost.addTab(mTabHost.newTabSpec("Tab4").setIndicator("Game", null), CTap.class, null);
+    }
 }
