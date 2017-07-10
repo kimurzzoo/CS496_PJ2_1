@@ -45,7 +45,7 @@ public class LoginPage extends AppCompatActivity {
                             public void onCompleted(JSONObject object, GraphResponse response) {
                                 //after login, check whether they already logged in before.
                                 //if not, post the information to server.
-                                String url = "http://10.0.2.2:8080/api/people";
+                                String url = "http://13.124.144.112:8080/api/people";
                                 String res = "";
                                 String userID = "";
 
@@ -77,6 +77,7 @@ public class LoginPage extends AppCompatActivity {
                                     final PostTask postTask = new PostTask(url, object);
                                     postTask.execute();
                                 }
+                                System.out.println("login finish");
                                 finish();
                             }
                         });

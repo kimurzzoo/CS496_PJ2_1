@@ -25,11 +25,6 @@ class PostTask extends AsyncTask<String, String , String> {
 
     //given: url, person object
     //do: make client, save url, save information of person in json.
-    PostTask(String url, Person person) {
-        client = new OkHttpClient();
-        this.url = url;
-        makeJson(makeJsonStr(person.name, person.image, person.score));
-    }
 
     PostTask(String url, String jsonInfo) {
         client = new OkHttpClient();
@@ -62,12 +57,6 @@ class PostTask extends AsyncTask<String, String , String> {
             e.printStackTrace();
             return null;
         }
-    }
-
-    public String makeJsonStr (String name, String phoneNumber, String email){
-        return  "{'name':'" + name + "'," +
-                 "'image':'" + phoneNumber + "'," +
-                 "'score':'" + email + "'}";
     }
 
     public void makeJson (String jsonInfo){

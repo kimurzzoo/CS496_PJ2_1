@@ -38,17 +38,21 @@ public class MainActivity extends AppCompatActivity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        System.out.println("main onCreate");
         if (AccessToken.getCurrentAccessToken() == null) {
             Intent loginIntent = new Intent(this, LoginPage.class);
             startActivity(loginIntent);
+            System.out.println("login");
         }
         setContentView(R.layout.activity_main);
 
+        System.out.println("Tab host start");
         mTabHost = (FragmentTabHost) findViewById(android.R.id.tabhost);
         mTabHost.setup(this, getSupportFragmentManager(), android.R.id.tabcontent);
         mTabHost.addTab(mTabHost.newTabSpec("Tab1").setIndicator("Friends", null), ATap.class, null);
         mTabHost.addTab(mTabHost.newTabSpec("Tab2").setIndicator("My Page", null), BTap.class, null);
-        mTabHost.addTab(mTabHost.newTabSpec("Tab4").setIndicator("Game", null), CTap.class, null);
+        mTabHost.addTab(mTabHost.newTabSpec("Tab3").setIndicator("Game", null), CTap.class, null);
         mTabHost.setCurrentTab(1);
+        System.out.println("Tab host finished");
     }
 }

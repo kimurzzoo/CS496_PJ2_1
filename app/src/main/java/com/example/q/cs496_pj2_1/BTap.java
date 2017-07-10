@@ -36,8 +36,9 @@ import static android.app.Activity.RESULT_OK;
  */
 
 public class BTap extends Fragment {
-    public String userID = AccessToken.getCurrentAccessToken().getUserId();
+    public AccessToken user = AccessToken.getCurrentAccessToken();
     public String url = "http://10.0.2.2:8080/api/people";
+    public String userID;
     public Integer REQUEST_GET_PHOTO = 1;
     TextView name;
     EditText email;
@@ -47,63 +48,70 @@ public class BTap extends Fragment {
             R.drawable.img_6, R.drawable.img_7, R.drawable.img_8, R.drawable.img_9, R.drawable.img_10};
 
     public BTap() {
+
     }
 
     public View onCreateView(LayoutInflater inflater, final ViewGroup container,
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.b_tap, null);
+        System.out.println("Btap start");
 
-        name = (TextView) view.findViewById(R.id.userName);
-        email = (EditText) view.findViewById(R.id.userEmail);
-        gender = (TextView) view.findViewById(R.id.userGender);
-        image = (ImageView) view.findViewById(R.id.image);
+        if (user != null) {
+            userID = AccessToken.getCurrentAccessToken().getUserId();
 
-        //get user information
-        final GetTask getTask = new GetTask();
-        String userStr = "";
-        JSONObject userJson = null;
+            name = (TextView) view.findViewById(R.id.userName);
+            email = (EditText) view.findViewById(R.id.userEmail);
+            gender = (TextView) view.findViewById(R.id.userGender);
+            image = (ImageView) view.findViewById(R.id.image);
 
-        try {
-            userStr = getTask.execute(url+"/"+userID).get();
-            userJson = new JSONObject(userStr);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        } catch (ExecutionException e) {
-            e.printStackTrace();
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
+            //get user information
+            final GetTask getTask = new GetTask();
+            String userStr = "";
+            JSONObject userJson = null;
 
-        //set user information
-        try {
-            name.setText(userJson.getString("name"));
-            email.setText(userJson.getString("email"));
-            gender.setText(userJson.getString("gender"));
-            //change!! get info from server.
-            image.setImageResource(R.drawable.ic_person);
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-
-
-        image.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Intent photoIntent = new Intent(
-                        getActivity().getApplicationContext(),
-                        ChoosePhoto.class
-                );
-                startActivityForResult(photoIntent, REQUEST_GET_PHOTO);
+            try {
+                userStr = getTask.execute(url + "/" + userID).get();
+                userJson = new JSONObject(userStr);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            } catch (ExecutionException e) {
+                e.printStackTrace();
+            } catch (JSONException e) {
+                e.printStackTrace();
             }
-        });
 
-        Button save = (Button) view.findViewById(R.id.save);
-        save.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                //save the information to server db. (email, image)
+            //set user information
+            try {
+                name.setText(userJson.getString("name"));
+                email.setText(userJson.getString("email"));
+                gender.setText(userJson.getString("gender"));
+                String imageSource = userJson.getString("image");
+
+                //change!! get info from server.
+                image.setImageResource(R.drawable.ic_person);
+            } catch (JSONException e) {
+                e.printStackTrace();
             }
-        });
+
+            image.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    Intent photoIntent = new Intent(
+                            getActivity().getApplicationContext(),
+                            ChoosePhoto.class
+                    );
+                    startActivityForResult(photoIntent, REQUEST_GET_PHOTO);
+                }
+            });
+
+            Button save = (Button) view.findViewById(R.id.save);
+            save.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    //save the information to server db. (email, image)
+                }
+            });
+        }
 
         return view;
     }
