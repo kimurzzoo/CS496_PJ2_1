@@ -135,7 +135,6 @@ public class ChoosePhoto extends AppCompatActivity {
 
 
 
-
     public class ImageAdapter extends BaseAdapter {
         private Context context;
         public Bitmap image;

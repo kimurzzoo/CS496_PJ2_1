@@ -77,7 +77,7 @@ public class LoginPage extends AppCompatActivity {
                                     final PostTask postTask = new PostTask(url, object);
                                     postTask.execute();
                                 }
-                                System.out.println("login finish");
+                                setResult(RESULT_OK);
                                 finish();
                             }
                         });

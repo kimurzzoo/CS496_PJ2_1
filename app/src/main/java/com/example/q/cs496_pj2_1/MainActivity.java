@@ -34,25 +34,35 @@ import java.util.concurrent.ExecutionException;
 public class MainActivity extends AppCompatActivity {
     CallbackManager callbackManager;
     private FragmentTabHost mTabHost;
+    public Integer REQUEST_LOGIN = 1;
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        System.out.println("main onCreate");
         if (AccessToken.getCurrentAccessToken() == null) {
             Intent loginIntent = new Intent(this, LoginPage.class);
-            startActivity(loginIntent);
-            System.out.println("login");
+            startActivityForResult(loginIntent, REQUEST_LOGIN);
         }
         setContentView(R.layout.activity_main);
 
-        System.out.println("Tab host start");
         mTabHost = (FragmentTabHost) findViewById(android.R.id.tabhost);
         mTabHost.setup(this, getSupportFragmentManager(), android.R.id.tabcontent);
         mTabHost.addTab(mTabHost.newTabSpec("Tab1").setIndicator("Friends", null), ATap.class, null);
         mTabHost.addTab(mTabHost.newTabSpec("Tab2").setIndicator("My Page", null), BTap.class, null);
         mTabHost.addTab(mTabHost.newTabSpec("Tab3").setIndicator("Game", null), CTap.class, null);
         mTabHost.setCurrentTab(1);
-        System.out.println("Tab host finished");
+        if (AccessToken.getCurrentAccessToken() != null) {
+            //System.out.println("already login");
+            mTabHost.setCurrentTab(1);
+        }
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == REQUEST_LOGIN && resultCode == RESULT_OK) {
+            //System.out.println("login finished");
+            mTabHost.setCurrentTab(1);
+        }
     }
 }

@@ -54,7 +54,6 @@ public class BTap extends Fragment {
     public View onCreateView(LayoutInflater inflater, final ViewGroup container,
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.b_tap, null);
-        System.out.println("Btap start");
 
         if (user != null) {
             userID = AccessToken.getCurrentAccessToken().getUserId();
