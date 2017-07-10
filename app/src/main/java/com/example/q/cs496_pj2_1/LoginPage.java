@@ -35,7 +35,7 @@ public class LoginPage extends AppCompatActivity {
         LoginButton loginButton = (LoginButton) findViewById(R.id.login_button);
 
         //user permission
-        loginButton.setReadPermissions(Arrays.asList("public_profile", "email", "read_custom_friendlists "));
+        loginButton.setReadPermissions(Arrays.asList("public_profile", "email", "user_friends"));
         loginButton.registerCallback(callbackManager, new FacebookCallback<LoginResult>() {
             @Override
             public void onSuccess(LoginResult loginResult) {
@@ -82,7 +82,7 @@ public class LoginPage extends AppCompatActivity {
                         });
 
                 Bundle parameters = new Bundle();
-                parameters.putString("fields", "id,name,email,gender,birthday");
+                parameters.putString("fields", "id,name,email,gender");
                 graphRequest.setParameters(parameters);
                 graphRequest.executeAsync();
             }
