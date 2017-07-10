@@ -35,7 +35,7 @@ public class LoginPage extends AppCompatActivity {
         LoginButton loginButton = (LoginButton) findViewById(R.id.login_button);
 
         //user permission
-        loginButton.setReadPermissions(Arrays.asList("public_profile", "email", "user_friends"));
+        loginButton.setReadPermissions(Arrays.asList("public_profile", "email", "user_friends", "read_custom_friendlists"));
         loginButton.registerCallback(callbackManager, new FacebookCallback<LoginResult>() {
             @Override
             public void onSuccess(LoginResult loginResult) {
