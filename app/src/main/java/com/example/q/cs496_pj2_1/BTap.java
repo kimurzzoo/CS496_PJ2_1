@@ -24,6 +24,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.facebook.AccessToken;
+import com.facebook.login.LoginManager;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -48,6 +49,8 @@ public class BTap extends Fragment {
     public String url = "http://13.124.144.112:8080/api/people";
     public String userID;
     public Integer REQUEST_GET_PHOTO = 1;
+    public Integer REQUEST_LOGIN = 2;
+    View view;
     TextView nameView;
     EditText emailView;
     TextView genderView;
@@ -62,24 +65,163 @@ public class BTap extends Fragment {
 
     public View onCreateView(LayoutInflater inflater, final ViewGroup container,
                              Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.b_tap, null);
+        view = inflater.inflate(R.layout.b_tap, null);
 
-        if (user != null) {
-            userID = AccessToken.getCurrentAccessToken().getUserId();
+        while (user == null) {
+            try {
+                user = AccessToken.getCurrentAccessToken();
+                Thread.sleep(100);
+            } catch (InterruptedException e) { }
+        }
 
-            nameView = (TextView) view.findViewById(R.id.userName);
-            emailView = (EditText) view.findViewById(R.id.userEmail);
-            genderView = (TextView) view.findViewById(R.id.userGender);
-            imageView = (ImageView) view.findViewById(R.id.image);
+        userID = AccessToken.getCurrentAccessToken().getUserId();
 
-            imageView.setClickable(false);
-            imageView.setFocusable(false);
-            emailView.setFocusableInTouchMode(false);
+        nameView = (TextView) view.findViewById(R.id.userName);
+        emailView = (EditText) view.findViewById(R.id.userEmail);
+        genderView = (TextView) view.findViewById(R.id.userGender);
+        imageView = (ImageView) view.findViewById(R.id.image);
 
+        imageView.setClickable(false);
+        imageView.setFocusable(false);
+        emailView.setFocusableInTouchMode(false);
+
+        //get user information
+        final GetTask getTask = new GetTask();
+        String userStr = "";
+        JSONObject userJson = null;
+
+        try {
+            userStr = getTask.execute(url + "/" + userID).get();
+            userJson = new JSONObject(userStr);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        //set user information
+        try {
+            nameView.setText(userJson.getString("name"));
+            emailView.setText(userJson.getString("email"));
+            genderView.setText(userJson.getString("gender"));
+
+            final String imageSource = userJson.getString("image");
+            final Bitmap[] imageBitmap = new Bitmap[1];
+            if (imageSource.contains("https://")) {
+                Thread mThread = new Thread() {
+                    @Override
+                    public void run() {
+                        try {
+                            URL imageUrl = new URL(imageSource);
+                            HttpURLConnection connection = (HttpURLConnection) imageUrl.openConnection();
+                            connection.setDoInput(true);
+                            connection.connect();
+
+                            InputStream is = connection.getInputStream();
+                            imageBitmap[0] = BitmapFactory.decodeStream(is);
+
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                };
+
+                mThread.start();
+                try {
+                    mThread.join();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            } else {
+                byte[] buf = Base64.decode(imageSource, Base64.DEFAULT);
+                imageBitmap[0] = BitmapFactory.decodeByteArray(buf, 0, buf.length);
+            }
+            imageView.setImageBitmap(imageBitmap[0]);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        imageView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (imageView.isClickable() && imageView.isFocusable()) {
+                    Intent photoIntent = new Intent(
+                            getActivity().getApplicationContext(),
+                            ChoosePhoto.class
+                    );
+                    startActivityForResult(photoIntent, REQUEST_GET_PHOTO);
+                }
+            }
+        });
+
+        final Button logoutButton = (Button) view.findViewById(R.id.logout);
+        logoutButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (AccessToken.getCurrentAccessToken() != null && com.facebook.Profile.getCurrentProfile() != null) {
+                    user = null;
+                    userID = null;
+                    LoginManager.getInstance().logOut();
+
+                    Intent loginIntent = new Intent(getActivity(), LoginPage.class);
+                    startActivityForResult(loginIntent, REQUEST_LOGIN);
+                }
+            }
+        });
+
+        final Button saveButton = (Button) view.findViewById(R.id.changeANDsave);
+        saveButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (saveButton.getText().equals("수정")) {
+                    imageView.setClickable(true);
+                    imageView.setFocusable(true);
+                    emailView.setFocusableInTouchMode(true);
+                    emailView.setClickable(true);
+                    emailView.setFocusable(true);
+                    saveButton.setText("저장");
+                } else if (saveButton.getText().equals("저장")) {
+                    Bitmap imageBitmap = ((BitmapDrawable) (imageView.getDrawable())).getBitmap();
+                    imageBitmap = Bitmap.createScaledBitmap(imageBitmap, 80, 80, true);
+
+                    ByteArrayOutputStream stream = new ByteArrayOutputStream();
+                    imageBitmap.compress(Bitmap.CompressFormat.JPEG, 100, stream);
+                    byte[] buf = stream.toByteArray();
+                    String encodedImage = Base64.encodeToString(buf, Base64.DEFAULT);
+
+                    String jsonStr = "{'email':'" + emailView.getText().toString() + "', " +
+                            "'image':'" + encodedImage + "'}";
+
+                    PutTask putTask = new PutTask("http://13.124.144.112:8080/api/people/" + userID, jsonStr);
+                    putTask.execute();
+
+                    emailView.setClickable(false);
+                    emailView.setFocusable(false);
+                    emailView.setFocusableInTouchMode(false);
+                    imageView.setClickable(false);
+                    imageView.setFocusable(false);
+                    saveButton.setText("수정");
+                }
+            }
+        });
+        return view;
+    }
+
+    public void onActivityResult(int requestCode, int resultCode, Intent data){
+        if(requestCode == REQUEST_LOGIN && resultCode == RESULT_OK){
+            while (user == null) {
+                try {
+                    user = AccessToken.getCurrentAccessToken();
+                    Thread.sleep(100);
+                } catch (InterruptedException e) { }
+            }
             //get user information
             final GetTask getTask = new GetTask();
             String userStr = "";
             JSONObject userJson = null;
+            userID = user.getUserId();
 
             try {
                 userStr = getTask.execute(url + "/" + userID).get();
@@ -98,15 +240,15 @@ public class BTap extends Fragment {
                 emailView.setText(userJson.getString("email"));
                 genderView.setText(userJson.getString("gender"));
 
+
+
                 final String imageSource = userJson.getString("image");
                 final Bitmap[] imageBitmap = new Bitmap[1];
-                if(imageSource.contains("https://")) {
-                    Thread mThread = new Thread()
-                    {
+                if (imageSource.contains("https://")) {
+                    Thread mThread = new Thread() {
                         @Override
                         public void run() {
-                            try
-                            {
+                            try {
                                 URL imageUrl = new URL(imageSource);
                                 HttpURLConnection connection = (HttpURLConnection) imageUrl.openConnection();
                                 connection.setDoInput(true);
@@ -115,21 +257,16 @@ public class BTap extends Fragment {
                                 InputStream is = connection.getInputStream();
                                 imageBitmap[0] = BitmapFactory.decodeStream(is);
 
-                            }
-                            catch(IOException e)
-                            {
+                            } catch (IOException e) {
                                 e.printStackTrace();
                             }
                         }
                     };
 
                     mThread.start();
-                    try
-                    {
+                    try {
                         mThread.join();
-                    }
-                    catch (InterruptedException e)
-                    {
+                    } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
                 } else {
@@ -140,60 +277,9 @@ public class BTap extends Fragment {
             } catch (JSONException e) {
                 e.printStackTrace();
             }
+            view.invalidate();
 
-            imageView.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    if (imageView.isClickable() && imageView.isFocusable()) {
-                        Intent photoIntent = new Intent(
-                                getActivity().getApplicationContext(),
-                                ChoosePhoto.class
-                        );
-                        startActivityForResult(photoIntent, REQUEST_GET_PHOTO);
-                    }
-                }
-            });
-
-            final Button button = (Button) view.findViewById(R.id.changeANDsave);
-            button.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    if (button.getText().equals("수정")){
-                        imageView.setClickable(true);
-                        imageView.setFocusable(true);
-                        emailView.setFocusableInTouchMode(true);
-                        emailView.setClickable(true);
-                        emailView.setFocusable(true);
-                        button.setText("저장");
-                    }else if (button.getText().equals("저장")) {
-                        Bitmap imageBitmap = ((BitmapDrawable) (imageView.getDrawable())).getBitmap();
-                        ByteArrayOutputStream stream = new ByteArrayOutputStream();
-                        imageBitmap.compress(Bitmap.CompressFormat.JPEG, 100, stream);
-                        byte[] buf = stream.toByteArray();
-                        String encodedImage = Base64.encodeToString(buf, Base64.DEFAULT);
-
-                        String jsonStr = "{'email':'" + emailView.getText().toString() + "', " +
-                                "'image':'" + encodedImage + "'}";
-
-                        PutTask putTask = new PutTask("http://13.124.144.112:8080/api/people/"+userID, jsonStr);
-                        putTask.execute();
-
-                        emailView.setClickable(false);
-                        emailView.setFocusable(false);
-                        emailView.setFocusableInTouchMode(false);
-                        imageView.setClickable(false);
-                        imageView.setFocusable(false);
-                        button.setText("수정");
-                    }
-                }
-            });
-        }
-
-        return view;
-    }
-
-    public void onActivityResult(int requestCode, int resultCode, Intent data){
-        if(requestCode == REQUEST_GET_PHOTO && resultCode == RESULT_OK) {
+        }else if(requestCode == REQUEST_GET_PHOTO && resultCode == RESULT_OK) {
             /*byte[] imageBytes = data.getByteArrayExtra("imageBytes");
             Bitmap imageBitmap = BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.length);
             image.setImageBitmap(imageBitmap);*/

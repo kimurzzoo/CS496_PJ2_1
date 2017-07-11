@@ -5,21 +5,25 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 
+import com.facebook.AccessToken;
 import com.facebook.CallbackManager;
 import com.facebook.FacebookCallback;
 import com.facebook.FacebookException;
 import com.facebook.FacebookSdk;
 import com.facebook.GraphRequest;
 import com.facebook.GraphResponse;
+import com.facebook.HttpMethod;
 import com.facebook.Profile;
 import com.facebook.appevents.AppEventsLogger;
 import com.facebook.login.LoginManager;
 import com.facebook.login.LoginResult;
 import com.facebook.login.widget.LoginButton;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.concurrent.ExecutionException;
 
@@ -42,7 +46,8 @@ public class LoginPage extends AppCompatActivity {
                 GraphRequest graphRequest = GraphRequest.newMeRequest(loginResult.getAccessToken(),
                         new GraphRequest.GraphJSONObjectCallback() {
                             @Override
-                            public void onCompleted(JSONObject object, GraphResponse response) {
+                            public void onCompleted(final JSONObject object, GraphResponse response) {
+                                System.out.println("login seccuesful");
                                 //after login, check whether they already logged in before.
                                 //if not, post the information to server.
                                 String url = "http://13.124.144.112:8080/api/people";
@@ -51,6 +56,7 @@ public class LoginPage extends AppCompatActivity {
 
                                 try {
                                     userID = object.getString("id");
+                                    System.out.println(userID);
                                 } catch (JSONException e) {
                                     e.printStackTrace();
                                 }
@@ -74,9 +80,10 @@ public class LoginPage extends AppCompatActivity {
                                     } catch (JSONException e) {
                                         e.printStackTrace();
                                     }
-                                    final PostTask postTask = new PostTask(url, object);
-                                    postTask.execute();
                                 }
+                                final PostTask postTask = new PostTask(url, object);
+                                postTask.execute();
+
                                 setResult(RESULT_OK);
                                 finish();
                             }

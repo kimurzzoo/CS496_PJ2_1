@@ -50,12 +50,14 @@ public class MainActivity extends AppCompatActivity {
         mTabHost.addTab(mTabHost.newTabSpec("Tab1").setIndicator("Friends", null), ATap.class, null);
         mTabHost.addTab(mTabHost.newTabSpec("Tab2").setIndicator("My Page", null), BTap.class, null);
         mTabHost.addTab(mTabHost.newTabSpec("Tab3").setIndicator("Game", null), CTap.class, null);
+
         mTabHost.setCurrentTab(1);
         if (AccessToken.getCurrentAccessToken() != null) {
             //System.out.println("already login");
             mTabHost.setCurrentTab(1);
         }
     }
+
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
