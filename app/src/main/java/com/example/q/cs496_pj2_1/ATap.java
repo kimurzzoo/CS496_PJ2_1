@@ -260,6 +260,7 @@ public class ATap extends Fragment{
     final ArrayList<String> photourl1 = new ArrayList<String>();
     final ArrayList<String> photourl = new ArrayList<String>();
     final ArrayList<String> scorelist = new ArrayList<String>();
+    final ArrayList<String> scorelist1 = new ArrayList<String>();
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
@@ -273,6 +274,7 @@ public class ATap extends Fragment{
         sPhoneList.clear();
         sPhoneList1.clear();
         scorelist.clear();
+        scorelist1.clear();
 
         Thread mThread = new Thread()
         {
@@ -300,7 +302,7 @@ public class ATap extends Fragment{
                                                 String whatit = getTask.execute("http://13.124.144.112:8080/api/people/" + appids).get();
                                                 JSONObject whatobject = new JSONObject(whatit);
                                                 photourl1.add(whatobject.get("image").toString());
-                                                scorelist.add(whatobject.get("score").toString());
+                                                scorelist1.add(whatobject.get("score").toString());
                                             }
                                             catch (ExecutionException e)
                                             {
@@ -316,7 +318,7 @@ public class ATap extends Fragment{
                                     }
                                     for(int i=0; i<naming1.size();i++)
                                     {
-                                        sPhoneList1.add(new Items1(photourl1.get(i), naming1.get(i), scorelist.get(i)));
+                                        sPhoneList1.add(new Items1(photourl1.get(i), naming1.get(i), scorelist1.get(i)));
                                     }
                                     Adapter1 = new ItemsAdapter1(getActivity(), R.layout.fragment_a_item2, sPhoneList1);
                                     mResult1.setAdapter(Adapter1);
@@ -358,6 +360,7 @@ public class ATap extends Fragment{
                                         JSONObject jsonObject3 = jsonObject2.getJSONObject("data");
                                         String photourls = jsonObject3.get("url").toString();
                                         photourl.add(photourls);
+                                        scorelist.add("0");
                                     }
                                 } catch (JSONException e) {
                                     e.printStackTrace();
@@ -378,10 +381,10 @@ public class ATap extends Fragment{
 
                                 for(int i=0; i<naming.size();i++)
                                 {
-                                    sPhoneList.add(new Items(photourl.get(i), naming.get(i)));
+                                    sPhoneList1.add(new Items1(photourl.get(i), naming.get(i),scorelist.get(i)));
                                 }
-                                Adapter = new ItemsAdapter(getActivity(), R.layout.fragment_a_item ,sPhoneList);
-                                mResult.setAdapter(Adapter);
+                                Adapter1 = new ItemsAdapter1(getActivity(), R.layout.fragment_a_item2 ,sPhoneList1);
+                                mResult1.setAdapter(Adapter1);
                                 v.invalidate();
                             }
                         }
