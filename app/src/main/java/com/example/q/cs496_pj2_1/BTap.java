@@ -98,25 +98,46 @@ public class BTap extends Fragment {
                 emailView.setText(userJson.getString("email"));
                 genderView.setText(userJson.getString("gender"));
 
-                String imageSource = userJson.getString("image");
-                Bitmap imageBitmap;
+                final String imageSource = userJson.getString("image");
+                final Bitmap[] imageBitmap = new Bitmap[1];
                 if(imageSource.contains("https://")) {
-                    URL imageUrl = new URL(imageSource);
-                    HttpURLConnection connection = (HttpURLConnection) imageUrl.openConnection();
-                    connection.setDoInput(true);
-                    connection.connect();
-                    InputStream is = connection.getInputStream();
-                    imageBitmap = BitmapFactory.decodeStream(is);
+                    Thread mThread = new Thread()
+                    {
+                        @Override
+                        public void run() {
+                            try
+                            {
+                                URL imageUrl = new URL(imageSource);
+                                HttpURLConnection connection = (HttpURLConnection) imageUrl.openConnection();
+                                connection.setDoInput(true);
+                                connection.connect();
+
+                                InputStream is = connection.getInputStream();
+                                imageBitmap[0] = BitmapFactory.decodeStream(is);
+
+                            }
+                            catch(IOException e)
+                            {
+                                e.printStackTrace();
+                            }
+                        }
+                    };
+
+                    mThread.start();
+                    try
+                    {
+                        mThread.join();
+                    }
+                    catch (InterruptedException e)
+                    {
+                        e.printStackTrace();
+                    }
                 } else {
                     byte[] buf = Base64.decode(imageSource, Base64.DEFAULT);
-                    imageBitmap = BitmapFactory.decodeByteArray(buf, 0, buf.length);
+                    imageBitmap[0] = BitmapFactory.decodeByteArray(buf, 0, buf.length);
                 }
-                imageView.setImageBitmap(imageBitmap);
+                imageView.setImageBitmap(imageBitmap[0]);
             } catch (JSONException e) {
-                e.printStackTrace();
-            } catch (MalformedURLException e) {
-                e.printStackTrace();
-            } catch (IOException e) {
                 e.printStackTrace();
             }
 
