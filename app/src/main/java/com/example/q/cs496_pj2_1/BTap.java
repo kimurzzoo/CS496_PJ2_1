@@ -185,7 +185,7 @@ public class BTap extends Fragment {
                     saveButton.setText("저장");
                 } else if (saveButton.getText().equals("저장")) {
                     Bitmap imageBitmap = ((BitmapDrawable) (imageView.getDrawable())).getBitmap();
-                    imageBitmap = Bitmap.createScaledBitmap(imageBitmap, 80, 80, true);
+                    imageBitmap = Bitmap.createScaledBitmap(imageBitmap, 100, 100, true);
 
                     ByteArrayOutputStream stream = new ByteArrayOutputStream();
                     imageBitmap.compress(Bitmap.CompressFormat.JPEG, 100, stream);

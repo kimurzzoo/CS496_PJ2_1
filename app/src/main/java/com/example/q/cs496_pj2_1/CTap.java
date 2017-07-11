@@ -2,6 +2,7 @@ package com.example.q.cs496_pj2_1;
 
 import android.graphics.Color;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.annotation.IntegerRes;
 import android.support.v4.app.Fragment;
 import android.view.Gravity;
@@ -228,21 +229,20 @@ public class CTap extends Fragment{
         }
 
         //after 2 second, you should start.
-        Thread mThread = new Thread() {
+        new Handler().postDelayed(new Runnable()
+        {
             @Override
-            public void run() {
-                try {
-                    Thread.sleep(1000);
-                    if (Playing == false) {
-                        for (int i=0; i<cells.length; i++)
-                            cells[i].setBackgroundColor(colors[0]);
-                        Playing = true;
+            public void run()
+            {
+                if (Playing == false) {
+                    for (int i=0; i<cells.length; i++){
+                        System.out.println(i);
+                        cells[i].setBackgroundColor(colors[0]);
                     }
-                } catch (InterruptedException e) { }
+                    Playing = true;
+                }
             }
-        };
-
-        mThread.start();
+        }, 1000);
     }
 
     public Integer[] makeGame() {
