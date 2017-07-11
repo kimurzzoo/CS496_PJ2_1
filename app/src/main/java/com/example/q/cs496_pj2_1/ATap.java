@@ -16,6 +16,7 @@ import android.util.Base64;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -31,6 +32,7 @@ import com.facebook.HttpMethod;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.w3c.dom.Text;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -39,6 +41,8 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ThreadFactory;
 
@@ -151,7 +155,6 @@ class ItemsAdapter1 extends BaseAdapter
 public class ATap extends Fragment{
     public  ATap() {
     }
-    ListView mResult;
     ListView mResult1;
     ItemsAdapter1 Adapter1;
 
@@ -167,6 +170,7 @@ public class ATap extends Fragment{
         // Inflate the layout for this fragment
         final View v = inflater.inflate(R.layout.fragment_a, container, false);
         mResult1 = (ListView)v.findViewById(R.id.listman1);
+        final TextView scoreof = (TextView)v.findViewById(R.id.score);
         naming.clear();
         photourl.clear();
         naming1.clear();
@@ -180,7 +184,7 @@ public class ATap extends Fragment{
             @Override
             public void run() {
                 if (AccessToken.getCurrentAccessToken() != null) {
-                    new GraphRequest(
+                    GraphRequest graphRequest = new GraphRequest(
                             AccessToken.getCurrentAccessToken(),
                             "/me/friends",
                             null,
@@ -219,12 +223,15 @@ public class ATap extends Fragment{
                                     {
                                         sPhoneList1.add(new Items1(photourl1.get(i), naming1.get(i), "Score : " + scorelist1.get(i)));
                                     }
+                                    Ascending ascending = new Ascending();
+                                    Collections.sort(sPhoneList1, ascending);
                                     Adapter1 = new ItemsAdapter1(getActivity(), R.layout.fragment_a_item2, sPhoneList1);
                                     mResult1.setAdapter(Adapter1);
                                     v.invalidate();
                                 }
                             }
-                    ).executeAsync();
+                    );
+                    graphRequest.executeAsync();
                 }
             }
         };
@@ -232,6 +239,15 @@ public class ATap extends Fragment{
         try
         {
             mThread.join();
+        }
+        catch (InterruptedException e)
+        {
+            e.printStackTrace();
+        }
+
+        try
+        {
+            Thread.sleep(1000);
         }
         catch (InterruptedException e)
         {
@@ -299,6 +315,16 @@ public class ATap extends Fragment{
         {
             e.printStackTrace();
         }
+
         return v;
     }
+}
+
+class Ascending implements Comparator<Items1> {
+
+    @Override
+    public int compare(Items1 o1, Items1 o2) {
+        return Integer.parseInt(o1.score.replace("Score : ", "")) - Integer.parseInt(o2.score.replace("Score : ", ""));
+    }
+
 }
