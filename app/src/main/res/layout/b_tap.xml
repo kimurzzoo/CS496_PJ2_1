@@ -17,7 +17,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:layout_margin="16dp">
+        android:layout_margin="20dp">
 
         <ImageView
             android:id="@+id/image"
@@ -63,7 +63,7 @@
             <TableRow
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="6dp">
+                android:layout_marginTop="1dp">
 
                 <TextView
                     android:id="@+id/email"
@@ -78,6 +78,7 @@
                     android:layout_width="200sp"
                     android:layout_height="wrap_content"
                     android:hint="E-mail"
+                    android:textSize="16sp"
                     android:inputType="textEmailAddress"
                     android:maxLines="1" />
             </TableRow>
@@ -85,7 +86,7 @@
             <TableRow
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="6dp">
+                android:layout_marginTop="1dp">
 
                 <TextView
                     android:id="@+id/gender"
@@ -120,18 +121,14 @@
             android:layout_width="80dp"
             android:layout_height="45dp"
             android:textSize="14sp"
-            android:layout_marginTop="10dp"
-            android:layout_marginBottom="10dp"
             android:text="수정" />
 
         <Button
             android:id="@+id/logout"
-            android:layout_width="80dp"
+            android:layout_width="100dp"
             android:layout_height="45dp"
             android:textSize="14sp"
             android:layout_marginLeft="10dp"
-            android:layout_marginBottom="10dp"
-            android:layout_marginTop="10dp"
             android:text="로그아웃" />
 
     </LinearLayout>

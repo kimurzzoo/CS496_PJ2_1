@@ -63,6 +63,7 @@ public class BTap extends Fragment {
 
     }
 
+    @Override
     public View onCreateView(LayoutInflater inflater, final ViewGroup container,
                              Bundle savedInstanceState) {
         view = inflater.inflate(R.layout.b_tap, null);
