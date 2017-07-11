@@ -4,14 +4,22 @@
     android:layout_height="wrap_content">
     <ImageView
         android:id="@+id/imagemoth1"
-        android:layout_width="wrap_content"
-        android:layout_height="match_parent" />
+        android:layout_margin="10dp"
+        android:layout_width="60dp"
+        android:layout_height="60dp" />
     <TextView
+        android:layout_marginTop="20dp"
+        android:layout_marginBottom="20dp"
+        android:layout_marginLeft="30dp"
+        android:layout_marginRight="50dp"
+        android:textSize="7pt"
         android:id="@+id/textname1"
-        android:layout_width="wrap_content"
-        android:layout_height="match_parent" />
+        android:layout_width="110dp"
+        android:layout_height="40dp" />
     <TextView
         android:id="@+id/score"
-        android:layout_width="wrap_content"
-        android:layout_height="match_parent" />
+        android:layout_marginTop="30dp"
+        android:layout_marginBottom="30dp"
+        android:layout_width="100dp"
+        android:layout_height="20dp" />
 </LinearLayout>
