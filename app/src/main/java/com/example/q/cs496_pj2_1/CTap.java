@@ -4,14 +4,23 @@ import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.IntegerRes;
 import android.support.v4.app.Fragment;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.TextView;
+import android.widget.Toast;
+
+import com.facebook.AccessToken;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.util.Arrays;
 import java.util.Random;
+import java.util.concurrent.ExecutionException;
 
 /**
  * Created by q on 2017-07-09.
@@ -21,22 +30,26 @@ public class CTap extends Fragment{
     public CTap() {
 
     }
-    public Integer round = 1;
+    public String userID = AccessToken.getCurrentAccessToken().getUserId();
     public Boolean Start = false;
     public Boolean Playing = false;
     public Boolean Resume = false;
     public Boolean Success = false;
-    public int score = 0;
+    public Boolean Fail = false;
     public int yellow = Color.rgb(255,234,93);
     public int red = Color.rgb(255,129,24);
     public int blue = Color.rgb(90,114,255);
     public int gray = Color.rgb(176,176,176);
     public int[] colors = new int[]{gray, yellow, red, blue};
-    Integer[] gameCells = new Integer[]{0,0,0,0,0,0,0,0,0,0,0,0};
-    Integer[] userCells = new Integer[]{0,0,0,0,0,0,0,0,0,0,0,0};
     Button gameButton;
     ImageView success;
     ImageView fail;
+    TextView scoreText;
+
+    Integer[] gameCells = new Integer[]{0,0,0,0,0,0,0,0,0,0,0,0};
+    Integer[] userCells = new Integer[]{0,0,0,0,0,0,0,0,0,0,0,0};
+    public Integer round = 1;
+    public int score = 0;
 
     @Override
     public View onCreateView(LayoutInflater inflater, final ViewGroup container,
@@ -57,6 +70,7 @@ public class CTap extends Fragment{
          final ImageView[] cells = new ImageView[]{cell_00, cell_01, cell_02,
                 cell_10, cell_11, cell_12, cell_20, cell_21, cell_22, cell_30, cell_31, cell_32};
         success = (ImageView) view.findViewById(R.id.success);
+        scoreText = (TextView) view.findViewById(R.id.score);
         fail = (ImageView) view.findViewById(R.id.fail);
         System.out.println("C tab start");
 
@@ -76,6 +90,20 @@ public class CTap extends Fragment{
         gameButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                if(Success == true){
+                    System.out.println("next round start");
+                    for (int i=0; i<cells.length; i++)
+                        cells[i].setBackgroundColor(colors[0]);
+                    Playing = false;
+                    Resume = false;
+                    Start = false;
+                    Success = false;
+                }else if (Fail == true) {
+                    Playing = false;
+                    Resume = false;
+                    Start = false;
+                    Fail = false;
+                }
                 if (Start == false) {
                     System.out.println("game start");
                     fail.setVisibility(View.GONE);
@@ -97,6 +125,7 @@ public class CTap extends Fragment{
                     gameButton.setText("RESUME");
                     System.out.println("game restart");
                     Resume = false;
+                    Playing = true;
                     for (int i=0; i<cells.length; i++) {
                         cells[i].setClickable(true);
                         cells[i].setFocusable(true);
@@ -123,47 +152,58 @@ public class CTap extends Fragment{
                 System.out.println("fail");
                 fail.setVisibility(View.VISIBLE);
 
-                //fail.setVisibility(View.GONE);
-                for (int i=0; i<cells.length; i++)
+                for (int i=0; i<cells.length; i++) {
+                    cells[i].setClickable(false);
+                    cells[i].setFocusable(false);
                     cells[i].setBackgroundColor(colors[0]);
-                Playing = false;
-                Resume = false;
-                Start = false;
-                userCells = new Integer[]{0,0,0,0,0,0,0,0,0,0,0,0};
-                gameCells = new Integer[]{0,0,0,0,0,0,0,0,0,0,0,0};
-                gameButton.setText("START GAME!");
+                }
+                Toast toast = Toast.makeText(getActivity().getApplicationContext(),
+                        "Score: "+score, Toast.LENGTH_LONG);
+                toast.setGravity(Gravity.CENTER, 0, 0);
+                toast.show();
+
+                String url = "http://13.124.144.112:8080/api/people/";
+                GetTask getTask = new GetTask();
+                String userStr;
+                JSONObject userJson;
+                String highScore = null;
+
+                try {
+                    userStr = getTask.execute(url + userID).get();
+                    userJson = new JSONObject(userStr);
+                    highScore = userJson.getString("score");
+                } catch (InterruptedException | ExecutionException | JSONException e) {
+                    e.printStackTrace();
+                }
+
+                if (Integer.parseInt(highScore) < score){
+                    String jsonInfo = "{'score': '" + score + "'}";
+                    final PutTask putTask = new PutTask(url+"score/"+
+                            AccessToken.getCurrentAccessToken().getUserId(),jsonInfo);
+                    putTask.execute();
+                }
+                round = 1;
                 score = 0;
+                scoreText.setText("score: "+score);
+                Fail = true;
+                gameButton.setText("START GAME!");
             }else {
                 score += 1;
+                scoreText.setText("score: "+score);
                 if (Arrays.equals(gameCells, userCells)){
                     System.out.println("success");
                     success.setVisibility(View.VISIBLE);
-                    success.invalidate();
-                    Success = true;
-
-                    try {
-                        Thread.sleep(1000);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
+                    for (int i=0; i<cells.length; i++) {
+                        cells[i].setClickable(false);
+                        cells[i].setFocusable(false);
                     }
-                    success.setVisibility(View.GONE);
-                    success.invalidate();
-                }
-            }
 
-            if(Success == true){
-                System.out.println("next round start");
-                score += 5;
-                for (int i=0; i<cells.length; i++)
-                    cells[i].setBackgroundColor(colors[0]);
-                try {
-                    Thread.sleep(1000);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
+                    round += 1;
+                    score += 5;
+                    scoreText.setText("score: "+score);
+                    Success = true;
+                    gameButton.setText("NEXT ROUND!");
                 }
-                round += 1;
-                gameStart(cells);
-                Success = false;
             }
         }
     }
@@ -192,7 +232,7 @@ public class CTap extends Fragment{
             @Override
             public void run() {
                 try {
-                    Thread.sleep(2000);
+                    Thread.sleep(1000);
                     if (Playing == false) {
                         for (int i=0; i<cells.length; i++)
                             cells[i].setBackgroundColor(colors[0]);
@@ -204,6 +244,7 @@ public class CTap extends Fragment{
 
         mThread.start();
     }
+
     public Integer[] makeGame() {
         Random random = new Random();
         Integer[] gameCells = new Integer[]{0,0,0,0,0,0,0,0,0,0,0,0};

@@ -89,20 +89,20 @@
                 android:layout_marginTop="1dp">
 
                 <TextView
-                    android:id="@+id/gender"
+                    android:id="@+id/score"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center_vertical"
-                    android:text="성별"
+                    android:text="기록"
                     android:textColor="#101010"
                     android:textSize="16sp" />
 
                 <TextView
-                    android:id="@+id/userGender"
+                    android:id="@+id/userScore"
                     android:layout_width="100sp"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center_vertical"
-                    android:text="성별"
+                    android:text="0"
                     android:textSize="16sp"
                     android:textColor="#101010"  />
 

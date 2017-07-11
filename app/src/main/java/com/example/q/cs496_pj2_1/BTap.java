@@ -53,7 +53,7 @@ public class BTap extends Fragment {
     View view;
     TextView nameView;
     EditText emailView;
-    TextView genderView;
+    TextView scoreView;
     ImageView imageView;
 
     int[] images = {R.drawable.img_1, R.drawable.img_2, R.drawable.img_3, R.drawable.img_4, R.drawable.img_5,
@@ -79,7 +79,7 @@ public class BTap extends Fragment {
 
         nameView = (TextView) view.findViewById(R.id.userName);
         emailView = (EditText) view.findViewById(R.id.userEmail);
-        genderView = (TextView) view.findViewById(R.id.userGender);
+        scoreView = (TextView) view.findViewById(R.id.userScore);
         imageView = (ImageView) view.findViewById(R.id.image);
 
         imageView.setClickable(false);
@@ -106,7 +106,7 @@ public class BTap extends Fragment {
         try {
             nameView.setText(userJson.getString("name"));
             emailView.setText(userJson.getString("email"));
-            genderView.setText(userJson.getString("gender"));
+            scoreView.setText(userJson.getString("score"));
 
             final String imageSource = userJson.getString("image");
             final Bitmap[] imageBitmap = new Bitmap[1];
@@ -239,7 +239,7 @@ public class BTap extends Fragment {
             try {
                 nameView.setText(userJson.getString("name"));
                 emailView.setText(userJson.getString("email"));
-                genderView.setText(userJson.getString("gender"));
+                scoreView.setText(userJson.getString("score"));
 
 
 
