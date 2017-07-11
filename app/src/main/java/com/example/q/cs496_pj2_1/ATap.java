@@ -46,6 +46,19 @@ import java.util.concurrent.ThreadFactory;
  * Created by q on 2017-07-09.
  */
 
+class Items1
+{
+    Items1(String aimageurl1, String aname1, String ascore)
+    {
+        imageurl = aimageurl1;
+        name =aname1;
+        score = ascore;
+    }
+    String imageurl;
+    String name;
+    String score;
+}
+
 class Items
 {
     Items(String aimageurl, String aname)
@@ -143,20 +156,110 @@ class ItemsAdapter extends BaseAdapter
 
 }
 
+class ItemsAdapter1 extends BaseAdapter
+{
+    ArrayList<Items1> arSrc;
+    int layout;
+    Context maincon;
+    LayoutInflater Inflater;
+
+    public ItemsAdapter1(Context context, int alayout, ArrayList<Items1> aarSrc)
+    {
+        maincon = context;
+        Inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        arSrc = aarSrc;
+        layout = alayout;
+    }
+
+    public int getCount()
+    {
+        return arSrc.size();
+    }
+    public String getItem(int position)
+    {
+        return arSrc.get(position).name;
+    }
+    public long getItemId(int position)
+    {
+        return position;
+    }
+    public View getView(int position, View convertView, ViewGroup parent)
+    {
+        final int pos = position;
+        if(convertView == null)
+        {
+            convertView = Inflater.inflate(layout, parent, false);
+        }
+        ImageView img = (ImageView)convertView.findViewById(R.id.imagemoth1);
+        final Bitmap[] bitmaps = new Bitmap[1];
+        Thread mThread = new Thread()
+        {
+            @Override
+            public void run() {
+                try
+                {
+                    HttpURLConnection conn = null;
+                    String asdfw = arSrc.get(pos).imageurl;
+                    if(asdfw.contains("https://graph.facebook.com/") || asdfw.contains("http://") || asdfw.contains("https://"))
+                    {
+                        URL aurl = new URL(arSrc.get(pos).imageurl);
+                        conn = (HttpURLConnection)aurl.openConnection();
+                        conn.setDoInput(true);
+                        conn.connect();
+                        InputStream is = conn.getInputStream();
+                        bitmaps[0] = BitmapFactory.decodeStream(is);
+                    }
+                    else
+                    {
+                        byte[] buf2 = Base64.decode(arSrc.get(pos).imageurl, Base64.DEFAULT);
+                        bitmaps[0] = BitmapFactory.decodeByteArray(buf2, 0, buf2.length);
+                    }
+                }
+                catch(IOException e)
+                {
+                    e.printStackTrace();
+                }
+            }
+        };
+
+        mThread.start();
+        try
+        {
+            mThread.join();
+        }
+        catch (InterruptedException e)
+        {
+            e.printStackTrace();
+        }
+
+        img.setImageBitmap(bitmaps[0]);
+
+        TextView txt2 = (TextView)convertView.findViewById(R.id.textname1);
+        txt2.setText(arSrc.get(position).name);
+
+        TextView txt3 = (TextView)convertView.findViewById(R.id.score);
+        txt3.setText(arSrc.get(position).score);
+        return convertView;
+    }
+
+
+}
+
 public class ATap extends Fragment{
     public  ATap() {
     }
     ListView mResult;
     ListView mResult1;
     ItemsAdapter Adapter;
-    ItemsAdapter Adapter1;
+    ItemsAdapter1 Adapter1;
 
     ArrayList<Items> sPhoneList = new ArrayList<Items>();
-    ArrayList<Items> sPhoneList1 = new ArrayList<Items>();
+    ArrayList<Items1> sPhoneList1 = new ArrayList<Items1>();
     final ArrayList<String> naming = new ArrayList<String>();
     final ArrayList<String> naming1 = new ArrayList<String>();
     final ArrayList<String> photourl1 = new ArrayList<String>();
     final ArrayList<String> photourl = new ArrayList<String>();
+    final ArrayList<String> scorelist = new ArrayList<String>();
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
@@ -169,6 +272,7 @@ public class ATap extends Fragment{
         photourl1.clear();
         sPhoneList.clear();
         sPhoneList1.clear();
+        scorelist.clear();
 
         Thread mThread = new Thread()
         {
@@ -196,6 +300,7 @@ public class ATap extends Fragment{
                                                 String whatit = getTask.execute("http://13.124.144.112:8080/api/people/" + appids).get();
                                                 JSONObject whatobject = new JSONObject(whatit);
                                                 photourl1.add(whatobject.get("image").toString());
+                                                scorelist.add(whatobject.get("score").toString());
                                             }
                                             catch (ExecutionException e)
                                             {
@@ -211,9 +316,9 @@ public class ATap extends Fragment{
                                     }
                                     for(int i=0; i<naming1.size();i++)
                                     {
-                                        sPhoneList1.add(new Items(photourl1.get(i), naming1.get(i)));
+                                        sPhoneList1.add(new Items1(photourl1.get(i), naming1.get(i), scorelist.get(i)));
                                     }
-                                    Adapter1 = new ItemsAdapter(getActivity(), R.layout.fragment_a_item, sPhoneList1);
+                                    Adapter1 = new ItemsAdapter1(getActivity(), R.layout.fragment_a_item2, sPhoneList1);
                                     mResult1.setAdapter(Adapter1);
                                     v.invalidate();
                                 }
