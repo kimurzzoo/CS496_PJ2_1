@@ -178,10 +178,10 @@ public class CTap extends Fragment{
                 }
 
                 if (Integer.parseInt(highScore) < score){
-                    String jsonInfo = "{'score': '" + score + "'}";
+                    String jsonInfo = "{\"score\": " + "\"" + score +  "\"" +  "}";
                     final PutTask putTask = new PutTask(url+"score/"+
                             AccessToken.getCurrentAccessToken().getUserId(),jsonInfo);
-                    putTask.execute();
+                    putTask.execute("i");
                 }
                 round = 1;
                 score = 0;
