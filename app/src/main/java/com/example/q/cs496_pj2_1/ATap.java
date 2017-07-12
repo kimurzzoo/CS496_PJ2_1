@@ -223,7 +223,7 @@ public class ATap extends Fragment{
                                     {
                                         sPhoneList1.add(new Items1(photourl1.get(i), naming1.get(i), "Score : " + scorelist1.get(i)));
                                     }
-                                    Ascending ascending = new Ascending();
+                                    Descending ascending = new Descending();
                                     Collections.sort(sPhoneList1, ascending);
                                     Adapter1 = new ItemsAdapter1(getActivity(), R.layout.fragment_a_item2, sPhoneList1);
                                     mResult1.setAdapter(Adapter1);
@@ -320,11 +320,11 @@ public class ATap extends Fragment{
     }
 }
 
-class Ascending implements Comparator<Items1> {
+class Descending implements Comparator<Items1> {
 
     @Override
     public int compare(Items1 o1, Items1 o2) {
-        return Integer.parseInt(o1.score.replace("Score : ", "")) - Integer.parseInt(o2.score.replace("Score : ", ""));
+        return Integer.parseInt(o2.score.replace("Score : ", "")) - Integer.parseInt(o1.score.replace("Score : ", ""));
     }
 
 }
